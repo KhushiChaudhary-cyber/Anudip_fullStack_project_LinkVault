@@ -1,0 +1,161 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinkVault | Your Personal Link Library</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header class="topbar">
+        <a class="brand" href="/">
+            <span class="brand-icon">L</span>
+            <span>LinkVault</span>
+        </a>
+        <span class="tagline">Your personal link library</span>
+    </header>
+
+    <main class="container">
+        <section class="hero">
+            <div>
+                <p class="eyebrow">YOUR DIGITAL BOOKMARKS</p>
+                <h1>Keep your useful links <span>within reach.</span></h1>
+                <p class="subtitle">
+                    Save resources, organize ideas, and find the right link whenever you need it.
+                </p>
+            </div>
+        </section>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="notice {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <section class="content-grid">
+            <aside class="panel add-panel">
+                <h2>Save a new link</h2>
+                <p class="muted">Keep something useful for later.</p>
+
+                <form action="{{ url_for('add_bookmark') }}" method="POST">
+                    <label for="title">Title *</label>
+                    <input id="title" name="title" type="text"
+                           placeholder="e.g. Flask Documentation" maxlength="150" required>
+
+                    <label for="url">Website URL *</label>
+                    <input id="url" name="url" type="url"
+                           placeholder="https://example.com" maxlength="2048" required>
+
+                    <label for="category">Category *</label>
+                    <select id="category" name="category" required>
+                        <option value="Learning">Learning</option>
+                        <option value="Tools">Tools</option>
+                        <option value="Work">Work</option>
+                        <option value="Inspiration">Inspiration</option>
+                        <option value="Other">Other</option>
+                    </select>
+
+                    <label for="notes">Notes</label>
+                    <textarea id="notes" name="notes" rows="3"
+                              placeholder="Why do you want to save this?"></textarea>
+
+                    <button class="primary-btn full-width" type="submit">
+                        + Save Bookmark
+                    </button>
+                </form>
+            </aside>
+
+            <section class="library">
+                <div class="library-heading">
+                    <div>
+                        <h2>Your collection</h2>
+                        <p class="muted">Your saved resources in one place.</p>
+                    </div>
+                </div>
+
+                <form class="filter-bar" action="/" method="GET">
+                    <input type="search" name="search" value="{{ search }}"
+                           placeholder="Search titles or URLs...">
+
+                    <select name="category" aria-label="Filter category">
+                        <option value="">All categories</option>
+                        {% for option in ["Learning", "Tools", "Work", "Inspiration", "Other"] %}
+                            <option value="{{ option }}"
+                                {% if category == option %}selected{% endif %}>
+                                {{ option }}
+                            </option>
+                        {% endfor %}
+                    </select>
+
+                    <button class="secondary-btn" type="submit">Search</button>
+                    <a class="clear-link" href="/">Clear</a>
+                </form>
+
+                <div class="quick-filters">
+                    <a class="{% if not favorites_only %}active{% endif %}" href="/">All links</a>
+                    <a class="{% if favorites_only %}active{% endif %}" href="/?favorites=1">★ Favorites</a>
+                </div>
+
+                {% if bookmarks %}
+                    <div class="bookmark-list">
+                        {% for bookmark in bookmarks %}
+                            <article class="bookmark-card">
+                                <div class="bookmark-top">
+                                    <span class="category-tag">{{ bookmark.category }}</span>
+
+                                    <form action="{{ url_for('toggle_favorite', bookmark_id=bookmark.id) }}"
+                                          method="POST">
+                                        <button class="favorite-btn" type="submit"
+                                                title="Toggle favorite">
+                                            {% if bookmark.is_favorite %}★{% else %}☆{% endif %}
+                                        </button>
+                                    </form>
+                                </div>
+
+                                <h3>{{ bookmark.title }}</h3>
+
+                                <a class="bookmark-url"
+                                   href="{{ bookmark.url }}" target="_blank"
+                                   rel="noopener noreferrer">
+                                    {{ bookmark.url }}
+                                </a>
+
+                                {% if bookmark.notes %}
+                                    <p class="notes">{{ bookmark.notes }}</p>
+                                {% endif %}
+
+                                <div class="bookmark-footer">
+                                    <small>
+                                        Saved {{ bookmark.created_at.strftime('%d %b %Y') }}
+                                    </small>
+
+                                    <form action="{{ url_for('delete_bookmark', bookmark_id=bookmark.id) }}"
+                                          method="POST"
+                                          onsubmit="return confirm('Delete this bookmark?');">
+                                        <button class="delete-btn" type="submit">Delete</button>
+                                    </form>
+                                </div>
+                            </article>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <div class="empty-icon">↗</div>
+                        <h3>No bookmarks found</h3>
+                        <p>Save your first useful link using the form.</p>
+                    </div>
+                {% endif %}
+            </section>
+        </section>
+
+        <footer>
+            Built with Flask, MySQL, HTML, CSS and JavaScript.
+        </footer>
+    </main>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
