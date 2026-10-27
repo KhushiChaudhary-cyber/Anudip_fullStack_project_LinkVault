@@ -10,7 +10,6 @@ def get_db_connection():
         host=os.getenv("DB_HOST", "127.0.0.1"),
         port=int(os.getenv("DB_PORT", "3306")),
         user=os.getenv("DB_USER", "root"),
-        password=os.getenv("DB_PASSWORD", "haengbok24@me"),
+        password=os.getenv("DB_PASSWORD", ""),
         database=os.getenv("DB_NAME", "linkvault")
     )
-
